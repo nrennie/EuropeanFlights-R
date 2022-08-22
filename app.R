@@ -4,6 +4,7 @@ library(ggplot2)
 library(stringr)
 library(markdown)
 library(lubridate)
+library(plotly)
 
 flights <- readr::read_csv("flights_data.csv")
 airports <- readr::read_csv("airport_data.csv")
@@ -69,13 +70,13 @@ ui <- fluidPage(
         column(6, 
                # Bar chart
                div(style='height:400px; overflow-y: scroll',
-                   plotOutput(outputId = "barplot")
+                   plotlyOutput(outputId = "barplot", height = "1200px")
                )
         ), 
         column(6, 
                # area plot
                div(style='height:400px;',
-                   plotOutput(outputId = "areaplot")
+                   plotlyOutput(outputId = "areaplot", height = "400px")
                ))
       ),
       
@@ -95,7 +96,12 @@ server <- function(input, output) {
       select(c(Total, Name, Date, Country)) %>% 
       group_by(Name, Country) %>% 
       summarise(n = round(mean(Total, na.rm = T))) %>% 
-      arrange(-n)
+      arrange(-n) %>% 
+      mutate(`Airport ` = paste0(Name, 
+                                 "\nCountry : ",
+                                 Country, 
+                                 "\nAverage : ", 
+                                 n))
     plot_df1
   })
   
@@ -108,18 +114,23 @@ server <- function(input, output) {
       select(-Date) %>% 
       group_by(yr_week, Country) %>% 
       summarise(n = round(mean(Total, na.rm = T))) %>% 
-      arrange(-n)
+      arrange(-n) %>% 
+      mutate(`Country ` = paste0(Country, 
+                                 "\nWeek Commencing : ", 
+                                 yr_week,
+                                 "\nAverage : ", 
+                                 n))
     plot_df2
   })
   
   # plots
-  output$barplot <- renderPlot({
+  output$barplot <- renderPlotly({
     barplot_data <- barplot_df()
-    ggplot(data = barplot_data, 
+    g1 <- ggplot(data = barplot_data, 
            mapping = aes(x = n, 
                          y = forcats::fct_reorder(Name, n), 
                          fill = Country)) +
-      geom_col() +
+      geom_col(aes(label = `Airport `)) +
       scale_fill_manual("", 
                         values = c("Belgium" = "#8175aa", 
                                    "France" = "#6fb899", 
@@ -132,16 +143,20 @@ server <- function(input, output) {
            title = "") +
       theme_minimal() +
       theme(legend.position = "none",
-            plot.margin = unit(c(0.5, 1, 0.5, 0.5), unit = "cm"))
-    },
-    height = function() {nrow(barplot_df())*13 + 30}
+            plot.margin = unit(c(0.5, 1, 0.5, 0.5), unit = "cm"),
+            panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank())
+    ggplotly(g1, tooltip = c("Airport "))  
+    }
   )
   
-  output$areaplot <- renderPlot({
+  output$areaplot <- renderPlotly({
     area_data <- area_df()
-    ggplot(data = area_data, 
-           mapping = aes(x = yr_week, y = n, fill = Country)) +
-      geom_area(alpha = 0.7) +
+    g2 <- ggplot(data = area_data, 
+           mapping = aes(x = yr_week,
+                         y = n,
+                         fill = Country)) +
+      geom_area(aes(label = `Country `), alpha = 0.7) +
       labs(x = "",
            y = "Average number of flights per day", 
            title = "") +
@@ -151,7 +166,8 @@ server <- function(input, output) {
                                    "Ireland" = "#31a1b3", 
                                    "Luxembourg" = "#ccb22b", 
                                    "Netherlands" = "#a39fc9", 
-                                   "United Kingdom" = "#94d0c0")) +
+                                   "United Kingdom" = "#94d0c0"), 
+                        labels = function(x) str_wrap(x, width = 7)) +
       guides(fill = guide_legend(nrow = 1)) +
       theme_minimal() +
       theme(legend.position = "bottom", 
@@ -159,10 +175,12 @@ server <- function(input, output) {
             plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), unit = "cm"), 
             panel.grid.major.x = element_blank(),
             panel.grid.minor.x = element_blank())
+    ggplotly(g2, tooltip = c("Country "))  %>%
+      layout(legend = list(
+        orientation = "h"
+      ))
     
-  }, 
-  height = 400
-  )
+  })
 
 }
 
