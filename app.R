@@ -8,73 +8,43 @@ flights <- readr::read_csv("flights_data.csv")
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
   
-  tags$head(
-    # Note the wrapping of the string in HTML()
-    tags$style(HTML("
-      body {
-        padding-left: 40px;
-        padding-right: 0px;
-        padding-top: 20px;
-      }"))
-  ),
-  
   # App title ----
   titlePanel("European Flights"),
   
-  # Sidebar layout with input and output definitions ----
-  sidebarLayout(
-    
-    position = "right", 
-    
-    
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-      
-      # Title
-      markdown("### **Controls**
+  # Subtitle
+  markdown("
+           The number of flights arriving or leaving from European airports saw a dramatic decrease with the onset of the Covid-19 pandemic in March 2020. Amsterdam - Schipol remains the busiest airport, averaging 1,150 flights per day since January 2016.
+           
+           Data: [Eurocontrol](https://ansperformance.eu/data/)
+           "),
+  
+  # Row for plot
+  fluidRow(
+    # bar chart output
+    column(10, 
+           plotOutput(outputId = "barplot")
+           ),
+    # controls
+    column(2,
+           markdown("### **Controls**
                
-               Use the selectors below to choose set of countries to explore.
+               Use the selectors below to choose a set of countries to explore.
                "),
-      
-      br(),
-
-      # Input: Select a country ----
-      checkboxGroupInput(
-        inputId = "country",
-        label = "Country",
-        choices = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom"),
-        selected = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom")
-      )
-      
-    ), 
-    
-    # Main panel for displaying outputs ----
-    mainPanel(
-      
-      # Subtitle
-      markdown("
-               The number of flights arriving or leaving from European airports saw a dramatic decrease with the onset of the Covid-19 pandemic in March 2020. Amsterdam - Schipol remains the busiest airport, averaging 1,150 flights per day since January 2016.
-               
-               Data: [Eurocontrol](https://ansperformance.eu/data/)
-               "),
-      
-      fluidRow(
-        column(12, 
-               # bar plot
-               div(style='height:400px;',
-                   plotOutput(outputId = "barplot", height = "400px")
-               ))
-      ),
-      
-      
+           checkboxGroupInput(
+             inputId = "country",
+             label = "Country",
+             choices = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom"),
+             selected = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom")
+           )
+           )
     )
   )
-)
+  
 
 # Function to define server
 server <- function(input, output) {
   
-  # Filer the data
+  # Filter the data
   plot_df <- reactive({
     req(input$country)
     plot_df <- flights %>% 
