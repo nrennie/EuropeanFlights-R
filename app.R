@@ -11,18 +11,11 @@ create_ui <- function() {
     
     # Add CSS styling
     tags$head(
-      tags$style(HTML("
-      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
-      body {
-        color: #505050;
-        font-family: 'Roboto', sans-serif;
-        padding-left: 20px;
-        padding-right: 20px;
-      }
-      h2 {
-        font-family: 'Roboto', sans-serif;
-        color: #black;
-      }"))
+      tags$style(
+        HTML(
+          "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap'); body { color: #505050; font-family: 'Roboto', sans-serif; padding-left: 20px; padding-right: 20px;} h2 { font-family: 'Roboto', sans-serif; color: #black;}"
+        )
+        )
     ),
     
     # App title ----
