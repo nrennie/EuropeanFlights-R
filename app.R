@@ -5,12 +5,13 @@ library(markdown)
 
 flights <- readr::read_csv("flights_data.csv")
 
-# Define UI for app that draws a histogram ----
-ui <- fluidPage(
-  
-  # Add CSS styling
-  tags$head(
-    tags$style(HTML("
+# Define UI for app ----
+create_ui <- function() {
+  app_ui <- fluidPage(
+    
+    # Add CSS styling
+    tags$head(
+      tags$style(HTML("
       @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
       body {
         color: #505050;
@@ -22,39 +23,44 @@ ui <- fluidPage(
         font-family: 'Roboto', sans-serif;
         color: #black;
       }"))
-  ),
-  
-  # App title ----
-  titlePanel("European Flights"),
-  
-  # Subtitle
-  markdown("
+    ),
+    
+    # App title ----
+    titlePanel("European Flights"),
+    
+    # Subtitle
+    markdown("
            The number of flights arriving or leaving from European airports saw a dramatic decrease with the onset of the Covid-19 pandemic in March 2020. Amsterdam - Schipol remains the busiest airport, averaging 1,150 flights per day since January 2016.
            
            Data: [Eurocontrol](https://ansperformance.eu/data/)
            "),
-  
-  # Row for plot
-  fluidRow(
-    # bar chart output
-    column(10, 
-           plotOutput(outputId = "barplot")
-           ),
-    # controls
-    column(2,
-           markdown("### **Controls**
+    
+    # Row for plot
+    fluidRow(
+      # bar chart output
+      column(10, 
+             plotOutput(outputId = "barplot")
+      ),
+      # controls
+      column(2,
+             markdown("### **Controls**
                
                Use the selectors below to choose a set of countries to explore.
                "),
-           checkboxGroupInput(
-             inputId = "country",
-             label = "Country",
-             choices = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom"),
-             selected = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom")
-           )
-           )
+             checkboxGroupInput(
+               inputId = "country",
+               label = "Country",
+               choices = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom"),
+               selected = c("Belgium", "France", "Ireland", "Luxembourg", "Netherlands", "United Kingdom")
+             )
+      )
     )
   )
+  return(app_ui)
+}
+
+ui_obj <- create_ui()
+
 
 # Function to make the plot
 create_plot <- function(data) {
@@ -78,14 +84,19 @@ create_plot <- function(data) {
 }
 
 # Function to define server
-server <- function(input, output) {
-  
-  output$barplot <- renderPlot({
-    req(input$country)
-    new_data <- filter(flights, Country %in% input$country) 
-    create_plot(new_data)
-  })
-
+create_server <- function(data) {
+  f <- function(input, output, session) {
+    
+    output$barplot <- renderPlot({
+      req(input$country)
+      new_data <- filter(data, Country %in% input$country) 
+      create_plot(new_data)
+    })
+    
+  }
+  return(f)
 }
 
-shinyApp(ui, server)
+server = create_server(flights)
+
+shinyApp(ui_obj, server)
