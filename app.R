@@ -79,7 +79,12 @@ server <- function(input, output) {
       labs(x = "",
            y = "Total number of flights per week", 
            title = "Total number of flights per week") +
-      scale_fill_brewer(palette = "Dark2") +
+      scale_fill_manual(values = c("Belgium" = "#F2C57C",
+                                   "France" = "#DDAE7E",
+                                   "Ireland" = "#7FB685",
+                                   "Luxembourg" = "#426A5A",
+                                   "Netherlands" = "#EF6F6C",
+                                   "United Kingdom" = "#AC9FBB")) +
       theme_minimal() +
       theme(panel.grid.major.x = element_blank(),
             panel.grid.minor.x = element_blank())
