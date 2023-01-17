@@ -8,6 +8,22 @@ flights <- readr::read_csv("flights_data.csv")
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
   
+  # Add CSS styling
+  tags$head(
+    tags$style(HTML("
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
+      body {
+        color: #505050;
+        font-family: 'Roboto', sans-serif;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+      h2 {
+        font-family: 'Roboto', sans-serif;
+        color: #black;
+      }"))
+  ),
+  
   # App title ----
   titlePanel("European Flights"),
   
